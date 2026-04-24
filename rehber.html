@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEMO OS | Mehmet Can YILDIRIM</title>
+    <style>
+        :root {
+            --accent-red: #ff0000;
+            --aero-blue: #00d4ff;
+            --aero-green: #39ff14;
+            --glass: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #050505;
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(255, 0, 0, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 85% 80%, rgba(0, 212, 255, 0.12) 0%, transparent 45%);
+            color: #fff;
+            margin: 0;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* --- ARKA PLAN BALONCUKLARI --- */
+        .bubbles {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; overflow: hidden;
+        }
+        .bubble {
+            position: absolute; bottom: -120px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.2);
+            animation: rise 12s infinite ease-in;
+        }
+        @keyframes rise {
+            0% { transform: translateY(0) scale(1); opacity: 0; }
+            50% { opacity: 0.4; }
+            100% { transform: translateY(-125vh) scale(1.6); opacity: 0; }
+        }
+
+        /* --- NAVİGASYON --- */
+        .top-nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 40px;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 2px solid var(--accent-red);
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .nav-logos { display: flex; align-items: center; gap: 20px; }
+
+        .logo-img { 
+            height: 42px; 
+            filter: drop-shadow(0 0 5px rgba(255,255,255,0.3));
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .logo-img:hover { transform: scale(1.25) rotate(5deg); filter: drop-shadow(0 0 15px var(--aero-blue)); }
+
+        .neon-brand {
+            font-size: 2.2em; font-weight: 900; letter-spacing: 6px;
+            color: #fff; text-shadow: 0 0 12px var(--accent-red);
+            font-style: italic;
+        }
+
+        /* --- ANA LOGO --- */
+        .main-logo {
+            width: 140px; height: 140px;
+            background: #000; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 50px auto 20px;
+            font-size: 80px; font-weight: 900; color: var(--accent-red);
+            border: 5px solid var(--accent-red);
+            cursor: pointer; transition: 0.6s;
+            user-select: none;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+        }
+        .main-logo:hover { transform: rotate(360deg) scale(1.15); box-shadow: 0 0 60px var(--aero-blue); border-color: var(--aero-blue); color: var(--aero-blue); }
+
+        /* --- KARTLAR --- */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; padding: 40px; max-width: 1200px; margin: 0 auto; }
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 35px;
+            transition: 0.5s;
+            position: relative; overflow: hidden;
+        }
+        .card:hover { transform: translateY(-15px); border-color: var(--aero-blue); background: rgba(255,255,255,0.12); box-shadow: 0 15px 40px rgba(0, 212, 255, 0.15); }
+
+        .terminal {
+            background: rgba(0,0,0,0.8); padding: 15px; border-radius: 12px;
+            color: var(--aero-green); font-family: 'Consolas', monospace; 
+            border-left: 4px solid var(--aero-green); margin-top: 15px;
+            font-size: 0.9em; box-shadow: inset 0 0 10px rgba(0,0,0,1);
+        }
+
+        /* --- RENKLİ İMZA ANİMASYONU --- */
+        .signature {
+            text-align: center; padding: 80px 20px;
+            font-size: 2.5em; font-weight: 900; letter-spacing: 4px;
+            text-transform: uppercase;
+            animation: colorShift 5s infinite ease-in-out;
+        }
+        @keyframes colorShift {
+            0% { color: var(--accent-red); text-shadow: 0 0 25px var(--accent-red); }
+            33% { color: var(--aero-blue); text-shadow: 0 0 25px var(--aero-blue); }
+            66% { color: var(--aero-green); text-shadow: 0 0 25px var(--aero-green); }
+            100% { color: var(--accent-red); text-shadow: 0 0 25px var(--accent-red); }
+        }
+
+        /* --- OYUN KATMANI --- */
+        #game-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.98); z-index: 9999; display: none;
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+        canvas { border: 5px solid var(--accent-red); background: #000; box-shadow: 0 0 50px rgba(255,0,0,0.5); }
+
+        .hidden { display: none; }
+        footer { text-align: center; padding: 50px; opacity: 0.4; font-size: 0.85em; letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+
+    <div class="bubbles" id="bubbleContainer"></div>
+
+    <div id="game-overlay">
+        <div style="color:var(--aero-green); font-size:2em; font-family:monospace; margin-bottom:15px; font-weight:bold;">SİSTEM PUANI: <span id="scoreVal">0</span></div>
+        <canvas id="gameCanvas"></canvas>
+        <div style="color:#fff; margin-top:20px; font-family:sans-serif;">[WASD] Hareket | [ESC] Çıkış</div>
+        <div class="signature" style="font-size: 1.2em; padding: 20px;">MEMO OS DEFENDER</div>
+    </div>
+
+    <nav class="top-nav">
+        <div class="nav-logos">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b4/Flag_of_Turkey.svg" class="logo-img" alt="TR">
+            <img src="https://upload.wikimedia.org/wikipedia/tr/b/bc/T.C._Mill%C3%AE_E%C4%9Fitim_Bakanl%C4%B1%C4%9F%C4%B1_logosu.png" class="logo-img" alt="MEB">
+        </div>
+        
+        <div class="neon-brand">MEMO OS</div>
+        
+        <div class="nav-logos">
+            <button style="background:none; border:1px solid rgba(255,255,255,0.5); color:white; padding:6px 12px; border-radius:8px; cursor:pointer; font-weight:bold; transition:0.3s;" onmouseover="this.style.background='white'; this.style.color='black'" onmouseout="this.style.background='none'; this.style.color='white'" onclick="toggleLang()">TR/EN</button>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/a/af/Tux.png" class="logo-img" alt="Linux">
+        </div>
+    </nav>
+
+    <header style="text-align:center;">
+        <div class="main-logo" id="logoBtn">M</div>
+        <h1 class="lang tr" style="font-size:3.5em; margin:10px 0;">MİLLİ GÜÇ, TAM ÖZGÜRLÜK</h1>
+        <h1 class="lang en hidden" style="font-size:3.5em; margin:10px 0;">NATIONAL POWER, TOTAL FREEDOM</h1>
+    </header>
+
+    <div class="container">
+        <section class="card" style="text-align: center; margin-bottom: 50px;">
+            <h2 class="lang tr">NEDEN MEMO OS?</h2>
+            <p class="lang tr" style="font-size:1.2em; line-height:1.6; opacity:0.9;">Mehmet Can YILDIRIM tarafından kodlanan bu sistem, Linux çekirdeğinin gücüyle Frutiger Aero'nun cam estetiğini birleştirir. Dijital bağımsızlığın en modern temsilcisidir.</p>
+        </section>
+
+        <div class="grid">
+            <div class="card">
+                <h3>📦 Milli Paket Sistemi</h3>
+                <p>Güvenli sunuculardan en yeni yazılımları indirin ve kurun.</p>
+                <div class="terminal">sudo memo-get update && upgrade</div>
+            </div>
+            <div class="card">
+                <h3>🛡️ Siber Kalkan</h3>
+                <p>Gelişmiş koruma duvarını tek tıkla devreye alın.</p>
+                <div class="terminal">sudo memo-firewall --secure</div>
+            </div>
+            <div class="card">
+                <h3>🧩 Aero Arayüz</h3>
+                <p>Cam efektlerini ve performansı optimize edin.</p>
+                <div class="terminal">memo-config --set-glass high</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="signature">
+        Mehmet Can YILDIRIM Tarafından Yapıldı
+    </div>
+
+    <footer>MEMO OS PROJECT © 2026 | TÜM HAKLARI SAKLIDIR</footer>
+
+    <script>
+        // Aero Baloncuk Efekti
+        const container = document.getElementById('bubbleContainer');
+        function initBubbles() {
+            for(let i=0; i<18; i++) {
+                let b = document.createElement('div');
+                b.className = 'bubble';
+                let s = Math.random() * 65 + 25 + 'px';
+                b.style.width = s; b.style.height = s;
+                b.style.left = Math.random() * 100 + '%';
+                b.style.animationDelay = Math.random() * 12 + 's';
+                b.style.animationDuration = Math.random() * 10 + 10 + 's';
+                container.appendChild(b);
+            }
+        }
+        initBubbles();
+
+        function toggleLang() { document.querySelectorAll('.lang').forEach(el => el.classList.toggle('hidden')); }
+
+        // Easter Egg (5 Tık ile Oyunu Başlat)
+        let clicks = 0;
+        document.getElementById('logoBtn').onclick = () => {
+            clicks++;
+            if(clicks === 5) { clicks = 0; start(); }
+            setTimeout(() => { if(clicks > 0) clicks--; }, 2000);
+        };
+
+        // Oyun Motoru
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800; canvas.height = 500;
+        let active = false, score = 0, p = {x: 380, y: 420}, enems = [], keys = {};
+
+        window.onkeydown = (e) => { 
+            keys[e.key.toLowerCase()] = true; 
+            if(e.key === "Escape") { active = false; document.getElementById('game-overlay').style.display='none'; }
+        };
+        window.onkeyup = (e) => keys[e.key.toLowerCase()] = false;
+
+        function start() {
+            document.getElementById('game-overlay').style.display='flex';
+            active = true; score = 0; enems = []; loop();
+        }
+
+        function loop() {
+            if(!active) return;
+            ctx.fillStyle = "rgba(0,0,0,0.3)"; ctx.fillRect(0,0,800,500);
+
+            if((keys['a'] || keys['arrowleft']) && p.x > 0) p.x -= 12;
+            if((keys['d'] || keys['arrowright']) && p.x < 760) p.x += 12;
+            if((keys['w'] || keys['arrowup']) && p.y > 0) p.y -= 12;
+            if((keys['s'] || keys['arrowdown']) && p.y < 460) p.y += 12;
+
+            // Karakter
+            ctx.fillStyle = "#00d4ff"; ctx.shadowBlur = 20; ctx.shadowColor = "#00d4ff";
+            ctx.fillRect(p.x, p.y, 40, 40); ctx.shadowBlur = 0;
+
+            // Düşmanlar
+            if(Math.random() < 0.06) enems.push({x: Math.random()*770, y: -30, speed: 6 + (score/250)});
+            enems.forEach((en, i) => {
+                en.y += en.speed;
+                ctx.fillStyle = "#ff0000"; ctx.fillRect(en.x, en.y, 30, 30);
+                if(p.x < en.x+30 && p.x+40 > en.x && p.y < en.y+30 && p.y+40 > en.y) {
+                    alert("SAVUNMA HATTI GEÇİLDİ! SKOR: " + score);
+                    active = false; document.getElementById('game-overlay').style.display='none';
+                }
+                if(en.y > 500) { enems.splice(i, 1); score += 10; document.getElementById('scoreVal').innerText = score; }
+            });
+            requestAnimationFrame(loop);
+        }
+    </script>
+</body>
+</html>
