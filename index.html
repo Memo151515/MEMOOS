@@ -58,6 +58,7 @@
             height: 42px; 
             filter: drop-shadow(0 0 5px rgba(255,255,255,0.3));
             transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
         }
         .logo-img:hover { transform: scale(1.25) rotate(5deg); filter: drop-shadow(0 0 15px var(--aero-blue)); }
 
@@ -116,11 +117,17 @@
         .card:hover { transform: translateY(-15px); border-color: var(--aero-blue); background: rgba(255,255,255,0.12); box-shadow: 0 15px 40px rgba(0, 212, 255, 0.15); }
 
         .terminal {
-            background: rgba(0,0,0,0.8); padding: 15px; border-radius: 12px;
-            color: var(--aero-green); font-family: 'Consolas', monospace; 
+            background: rgba(0,0,0,0.9); padding: 15px; border-radius: 12px;
+            color: #d1d1d1; font-family: 'Consolas', monospace; 
             border-left: 4px solid var(--aero-green); margin-top: 15px;
-            font-size: 0.9em; box-shadow: inset 0 0 10px rgba(0,0,0,1);
+            font-size: 0.85em; box-shadow: inset 0 0 10px rgba(0,0,0,1);
+            line-height: 1.4;
         }
+        /* Kod Renkleri */
+        .cmd { color: #569cd6; font-weight: bold; }
+        .param { color: #4ec9b0; }
+        .path { color: #ce9178; }
+        .comment { color: #6a9955; }
 
         /* --- RENKLİ İMZA --- */
         .signature {
@@ -160,15 +167,15 @@
 
     <nav class="top-nav">
         <div class="nav-logos">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b4/Flag_of_Turkey.svg" class="logo-img" alt="TR">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Milli_E%C4%9Fitim_Bakanl%C4%B1%C4%9F%C4%B1_Logo.svg/250px-Milli_E%C4%9Fitim_Bakanl%C4%B1%C4%9F%C4%B1_Logo.svg.png" class="logo-img" alt="MEB">
+            <img id="trWikiBtn" src="https://upload.wikimedia.org/wikipedia/commons/b/b4/Flag_of_Turkey.svg" class="logo-img" alt="TR">
+            <img id="mebWikiBtn" src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Milli_E%C4%9Fitim_Bakanl%C4%B1%C4%9F%C4%B1_Logo.svg/250px-Milli_E%C4%9Fitim_Bakanl%C4%B1%C4%9F%C4%B1_Logo.svg.png" class="logo-img" alt="MEB">
         </div>
         
         <div class="neon-brand">MEMO OS</div>
         
         <div class="nav-logos">
             <div id="google_translate_element"></div>
-            <img src="https://upload.wikimedia.org/wikipedia/commons/a/af/Tux.png" class="logo-img" alt="Linux">
+            <img id="linuxWikiBtn" src="https://upload.wikimedia.org/wikipedia/commons/a/af/Tux.png" class="logo-img" alt="Linux">
         </div>
     </nav>
 
@@ -185,19 +192,26 @@
 
         <div class="grid">
             <div class="card">
-                <h3>📦 Milli Paket Sistemi</h3>
+                <h3>📦 APT Paket Yönetimi</h3>
                 <p>Güvenli sunuculardan en yeni yazılımları indirin ve kurun.</p>
-                <div class="terminal">sudo memo-get update && upgrade</div>
+                <div class="terminal">
+                    <span class="cmd">sudo</span> apt-get <span class="param">update</span> && <span class="param">upgrade</span><br>
+                    <span class="comment"># Memo OS Paket Deposu</span>
+                </div>
             </div>
             <div class="card">
-                <h3>🛡️ Siber Kalkan</h3>
-                <p>Gelişmiş koruma duvarını tek tıkla devreye alın.</p>
-                <div class="terminal">sudo memo-firewall --secure</div>
+                <h3>🛡️ IP Tables Güvenliği</h3>
+                <p>Gelişmiş koruma duvarını kernel seviyesinde yönetin.</p>
+                <div class="terminal">
+                    <span class="cmd">sudo</span> iptables <span class="param">-A</span> INPUT <span class="param">-p</span> tcp <span class="param">--dport</span> 80 <span class="param">-j</span> ACCEPT
+                </div>
             </div>
             <div class="card">
-                <h3>🧩 Aero Arayüz</h3>
-                <p>Cam efektlerini ve performansı optimize edin.</p>
-                <div class="terminal">memo-config --set-glass high</div>
+                <h3>🧩 Systemd Servisleri</h3>
+                <p>Aero arayüz servislerini systemd ile optimize edin.</p>
+                <div class="terminal">
+                    <span class="cmd">sudo</span> systemctl <span class="param">enable</span> memo-aero.service
+                </div>
             </div>
         </div>
     </div>
@@ -235,12 +249,33 @@
         }
         initBubbles();
 
-        // Easter Egg (5 Tık ile Oyunu Başlat)
-        let clicks = 0;
+        // Fonksiyonel 5 Tık Yönlendirme Yardımcısı
+        function setupFiveClickRedirect(elementId, url) {
+            let count = 0;
+            const element = document.getElementById(elementId);
+            if(element) {
+                element.onclick = () => {
+                    count++;
+                    if(count === 5) {
+                        count = 0;
+                        window.location.href = url;
+                    }
+                    setTimeout(() => { if(count > 0) count--; }, 2000);
+                };
+            }
+        }
+
+        // Tıklama Olaylarını Kur
+        setupFiveClickRedirect('linuxWikiBtn', 'https://tr.wikipedia.org/wiki/Linux');
+        setupFiveClickRedirect('trWikiBtn', 'https://tr.wikipedia.org/wiki/T%C3%BCrkiye');
+        setupFiveClickRedirect('mebWikiBtn', 'https://tr.wikipedia.org/wiki/Mill%C3%AE_E%C4%9Fitim_Bakanl%C4%B1%C4%9F%C4%B1');
+
+        // Easter Egg (Logo 'M' 5 Tık ile Oyunu Başlat)
+        let logoClicks = 0;
         document.getElementById('logoBtn').onclick = () => {
-            clicks++;
-            if(clicks === 5) { clicks = 0; start(); }
-            setTimeout(() => { if(clicks > 0) clicks--; }, 2000);
+            logoClicks++;
+            if(logoClicks === 5) { logoClicks = 0; start(); }
+            setTimeout(() => { if(logoClicks > 0) logoClicks--; }, 2000);
         };
 
         // Oyun Motoru
