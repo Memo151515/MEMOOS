@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MEMO OS v1.5 - Final Engine</title>
+    <style>
+        :root {
+            --ios-ease: cubic-bezier(0.4, 0, 0.2, 1);
+            --app-speed: 0.5s;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+
+        body {
+            background: #000;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* Full Screen Button */
+        #fs-btn {
+            position: fixed; top: 15px; right: 15px; z-index: 2000;
+            background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); 
+            padding: 12px 20px; border-radius: 15px; color: white; cursor: pointer; 
+            backdrop-filter: blur(15px); transition: all 0.3s ease; font-weight: 600;
+        }
+
+        /* Ana Ekran */
+        #home-screen {
+            position: fixed; inset: 0;
+            background: url('https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=2070&auto=format&fit=crop') center/cover;
+            display: flex; flex-direction: column; z-index: 1;
+            transition: transform var(--app-speed) var(--ios-ease), filter var(--app-speed) var(--ios-ease);
+        }
+
+        .home-blur { transform: scale(0.92); filter: blur(20px) brightness(0.7); }
+
+        .status-bar { height: 44px; display: flex; justify-content: space-between; padding: 0 30px; align-items: center; color: white; font-weight: 600; font-size: 14px; }
+
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; padding: 30px; }
+
+        .app-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+
+        .icon {
+            width: 72px; height: 72px; border-radius: 20px; background: white;
+            display: flex; align-items: center; justify-content: center; font-size: 35px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); transition: transform 0.15s var(--ios-ease);
+            position: relative; overflow: hidden;
+        }
+
+        .app-item:active .icon { transform: scale(0.85); }
+
+        .label { color: white; font-size: 12px; margin-top: 8px; font-weight: 500; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+
+        /* --- GERÇEKÇİ PENCERE KATMANI --- */
+        .window-layer {
+            position: fixed; inset: 0;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .app-window {
+            position: absolute;
+            background: #1c1c1e;
+            border-radius: 40px;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            will-change: transform, opacity, width, height, top, left;
+            transition: 
+                top var(--app-speed) var(--ios-ease),
+                left var(--app-speed) var(--ios-ease),
+                width var(--app-speed) var(--ios-ease),
+                height var(--app-speed) var(--ios-ease),
+                opacity 0.2s ease,
+                border-radius var(--app-speed) var(--ios-ease);
+        }
+
+        /* Uygulama Aktifken */
+        .app-window.open {
+            opacity: 1 !important;
+            pointer-events: all !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            border-radius: 0px !important;
+        }
+
+        /* İçeriklerin geç gelmesi (Gerçekçilik için) */
+        .win-content {
+            opacity: 0;
+            transition: opacity 0.3s ease 0.2s;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 60px 25px 25px;
+            color: white;
+        }
+
+        .app-window.open .win-content { opacity: 1; }
+
+        /* Terminal Uygulaması */
+        .term-ui {
+            background: #000; border-radius: 15px; padding: 20px; flex: 1;
+            font-family: 'Courier New', monospace; color: #32d74b; 
+            border: 1px solid #333; overflow-y: auto;
+        }
+
+        /* Home Bar */
+        .home-indicator {
+            position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+            width: 130px; height: 5px; background: rgba(255,255,255,0.3);
+            border-radius: 10px; cursor: pointer; z-index: 1100;
+        }
+
+        .home-indicator:hover { background: rgba(255,255,255,0.6); }
+
+    </style>
+</head>
+<body>
+
+<button id="fs-btn" onclick="toggleFS()">Tam Ekran Yap</button>
+
+<div id="home-screen">
+    <div class="status-bar">
+        <span id="clock">12:00</span>
+        <div>📶 🔋</div>
+    </div>
+
+    <div class="grid">
+        <div class="app-item" onclick="launchApp(this, 'terminal')">
+            <div class="icon" style="background: #1a1a1a;">💾</div>
+            <div class="label">Terminal</div>
+        </div>
+        <div class="app-item" onclick="launchApp(this, 'settings')">
+            <div class="icon" style="background: linear-gradient(#f0f0f0, #bbb);">⚙️</div>
+            <div class="label">Ayarlar</div>
+        </div>
+        <div class="app-item" onclick="launchApp(this, 'notes')">
+            <div class="icon" style="background: #ffcc00;">📝</div>
+            <div class="label">Notlar</div>
+        </div>
+    </div>
+</div>
+
+<div class="window-layer">
+    <div id="win-terminal" class="app-window">
+        <div class="win-content">
+            <h2 style="margin-bottom: 20px;">MEMO Terminal</h2>
+            <div class="term-ui" id="term-log">
+                root@memo:~$ system_init<br>
+                > Fluid UI Engine... Ready<br>
+                > MEMO OS v1.5... Online<br>
+                > _
+            </div>
+        </div>
+        <div class="home-indicator" onclick="exitApp('terminal')"></div>
+    </div>
+
+    <div id="win-settings" class="app-window">
+        <div class="win-content">
+            <h2>Ayarlar</h2>
+            <div style="margin-top: 30px; background: #2c2c2e; padding: 20px; border-radius: 15px;">
+                <p>Cihaz: MEMO Phone 1</p>
+                <p>Sürüm: MEMO OS 1.5</p>
+                <p>Durum: Kararlı</p>
+            </div>
+        </div>
+        <div class="home-indicator" onclick="exitApp('settings')"></div>
+    </div>
+
+    <div id="win-notes" class="app-window">
+        <div class="win-content">
+            <h2>Notlar</h2>
+            <textarea style="width: 100%; height: 200px; background: transparent; border: none; color: white; font-size: 18px; margin-top: 20px;" placeholder="Yazmaya başla..."></textarea>
+        </div>
+        <div class="home-indicator" onclick="exitApp('notes')"></div>
+    </div>
+</div>
+
+<script>
+    let activeApp = null;
+    let iconOrigins = {};
+
+    function launchApp(el, id) {
+        const win = document.getElementById('win-' + id);
+        const home = document.getElementById('home-screen');
+        const icon = el.querySelector('.icon');
+        const rect = icon.getBoundingClientRect();
+        
+        // Konumu kaydet (Kapanırken oraya dönecek)
+        iconOrigins[id] = rect;
+
+        // HIZLI GEÇİŞ (INTERRUPT): Başka uygulama açıksa anında kapat
+        if (activeApp && activeApp !== id) {
+            const current = document.getElementById('win-' + activeApp);
+            current.classList.remove('open');
+            current.style.display = 'none'; // Beklemeden yok et
+        }
+
+        // Başlangıç değerlerini ikona göre ata
+        win.style.display = 'flex';
+        win.style.top = rect.top + 'px';
+        win.style.left = rect.left + 'px';
+        win.style.width = rect.width + 'px';
+        win.style.height = rect.height + 'px';
+        win.style.opacity = '0';
+        win.style.borderRadius = '20px';
+
+        // Animasyonu başlat
+        requestAnimationFrame(() => {
+            win.classList.add('open');
+            win.style.opacity = '1';
+            home.classList.add('home-blur');
+            activeApp = id;
+        });
+    }
+
+    function exitApp(id) {
+        const win = document.getElementById('win-' + id);
+        const home = document.getElementById('home-screen');
+        const rect = iconOrigins[id];
+
+        // İkona geri küçülme
+        win.classList.remove('open');
+        win.style.top = rect.top + 'px';
+        win.style.left = rect.left + 'px';
+        win.style.width = rect.width + 'px';
+        win.style.height = rect.height + 'px';
+        win.style.borderRadius = '20px';
+        win.style.opacity = '0';
+
+        home.classList.remove('home-blur');
+
+        // Animasyon bitince temizle
+        setTimeout(() => {
+            if (!win.classList.contains('open')) {
+                win.style.display = 'none';
+                activeApp = null;
+            }
+        }, 500);
+    }
+
+    // Fullscreen Logic
+    function toggleFS() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        } else {
+            document.exitFullscreen();
+        }
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+        const btn = document.getElementById('fs-btn');
+        btn.style.display = document.fullscreenElement ? 'none' : 'block';
+    });
+
+    // Saat
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('clock').innerText = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+</script>
+</body>
+</html>
