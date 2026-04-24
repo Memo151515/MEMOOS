@@ -67,6 +67,27 @@
             font-style: italic;
         }
 
+        /* --- GOOGLE TRANSLATE ÖZELLEŞTİRME --- */
+        #google_translate_element {
+            margin-right: 15px;
+        }
+        .goog-te-gadget-simple {
+            background-color: var(--glass) !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            padding: 5px !important;
+            border-radius: 8px !important;
+            font-family: 'Segoe UI' !important;
+        }
+        .goog-te-gadget-simple span {
+            color: white !important;
+        }
+        .goog-te-banner-frame.skiptranslate {
+            display: none !important;
+        }
+        body {
+            top: 0px !important;
+        }
+
         /* --- ANA LOGO --- */
         .main-logo {
             width: 140px; height: 140px;
@@ -101,7 +122,7 @@
             font-size: 0.9em; box-shadow: inset 0 0 10px rgba(0,0,0,1);
         }
 
-        /* --- RENKLİ İMZA ANİMASYONU --- */
+        /* --- RENKLİ İMZA --- */
         .signature {
             text-align: center; padding: 80px 20px;
             font-size: 2.5em; font-weight: 900; letter-spacing: 4px;
@@ -123,7 +144,6 @@
         }
         canvas { border: 5px solid var(--accent-red); background: #000; box-shadow: 0 0 50px rgba(255,0,0,0.5); }
 
-        .hidden { display: none; }
         footer { text-align: center; padding: 50px; opacity: 0.4; font-size: 0.85em; letter-spacing: 2px; }
     </style>
 </head>
@@ -141,27 +161,26 @@
     <nav class="top-nav">
         <div class="nav-logos">
             <img src="https://upload.wikimedia.org/wikipedia/commons/b/b4/Flag_of_Turkey.svg" class="logo-img" alt="TR">
-            <img src="//upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Milli_E%C4%9Fitim_Bakanl%C4%B1%C4%9F%C4%B1_Logo.svg/250px-Milli_E%C4%9Fitim_Bakanl%C4%B1%C4%9F%C4%B1_Logo.svg.png" class="logo-img" alt="MEB">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Milli_E%C4%9Fitim_Bakanl%C4%B1%C4%9F%C4%B1_Logo.svg/250px-Milli_E%C4%9Fitim_Bakanl%C4%B1%C4%9F%C4%B1_Logo.svg.png" class="logo-img" alt="MEB">
         </div>
         
         <div class="neon-brand">MEMO OS</div>
         
         <div class="nav-logos">
-            <button style="background:none; border:1px solid rgba(255,255,255,0.5); color:white; padding:6px 12px; border-radius:8px; cursor:pointer; font-weight:bold; transition:0.3s;" onmouseover="this.style.background='white'; this.style.color='black'" onmouseout="this.style.background='none'; this.style.color='white'" onclick="toggleLang()">TR/EN</button>
+            <div id="google_translate_element"></div>
             <img src="https://upload.wikimedia.org/wikipedia/commons/a/af/Tux.png" class="logo-img" alt="Linux">
         </div>
     </nav>
 
     <header style="text-align:center;">
         <div class="main-logo" id="logoBtn">M</div>
-        <h1 class="lang tr" style="font-size:3.5em; margin:10px 0;">MİLLİ GÜÇ, TAM ÖZGÜRLÜK</h1>
-        <h1 class="lang en hidden" style="font-size:3.5em; margin:10px 0;">NATIONAL POWER, TOTAL FREEDOM</h1>
+        <h1 style="font-size:3.5em; margin:10px 0;">MİLLİ GÜÇ, TAM ÖZGÜRLÜK</h1>
     </header>
 
     <div class="container">
         <section class="card" style="text-align: center; margin-bottom: 50px;">
-            <h2 class="lang tr">NEDEN MEMO OS?</h2>
-            <p class="lang tr" style="font-size:1.2em; line-height:1.6; opacity:0.9;">Mehmet Can YILDIRIM tarafından kodlanan bu sistem, Linux çekirdeğinin gücüyle Frutiger Aero'nun cam estetiğini birleştirir. Dijital bağımsızlığın en modern temsilcisidir.</p>
+            <h2>NEDEN MEMO OS?</h2>
+            <p style="font-size:1.2em; line-height:1.6; opacity:0.9;">Mehmet Can YILDIRIM tarafından kodlanan bu sistem, Linux çekirdeğinin gücüyle Frutiger Aero'nun cam estetiğini birleştirir. Dijital bağımsızlığın en modern temsilcisidir.</p>
         </section>
 
         <div class="grid">
@@ -189,6 +208,16 @@
 
     <footer>MEMO OS PROJECT © 2026 | TÜM HAKLARI SAKLIDIR</footer>
 
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'tr',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
     <script>
         // Aero Baloncuk Efekti
         const container = document.getElementById('bubbleContainer');
@@ -205,8 +234,6 @@
             }
         }
         initBubbles();
-
-        function toggleLang() { document.querySelectorAll('.lang').forEach(el => el.classList.toggle('hidden')); }
 
         // Easter Egg (5 Tık ile Oyunu Başlat)
         let clicks = 0;
@@ -242,11 +269,9 @@
             if((keys['w'] || keys['arrowup']) && p.y > 0) p.y -= 12;
             if((keys['s'] || keys['arrowdown']) && p.y < 460) p.y += 12;
 
-            // Karakter
             ctx.fillStyle = "#00d4ff"; ctx.shadowBlur = 20; ctx.shadowColor = "#00d4ff";
             ctx.fillRect(p.x, p.y, 40, 40); ctx.shadowBlur = 0;
 
-            // Düşmanlar
             if(Math.random() < 0.06) enems.push({x: Math.random()*770, y: -30, speed: 6 + (score/250)});
             enems.forEach((en, i) => {
                 en.y += en.speed;
